@@ -1,6 +1,6 @@
 # grunt-sftp-deploy
 
-This is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _sftp_ protocol.
+This is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _sftp_ protocol. It is mostly a copy of [grunt-ftp-deploy](https://github.com/zonak/grunt-ftp-deploy), but uses [ssh2](https://github.com/mscdex/ssh2) to provide sftp access instead of [jsftp](https://github.com/sergi/jsftp). And when I say "mostly a copy," I mean I stole it all and added sftp. Including this readme, for now.
 
 These days _git_ is not only our goto code management tool but in many cases our deployment tool as well. But there are many cases where _git_ is not really fit for deployment:
 
