@@ -144,7 +144,7 @@ module.exports = function(grunt) {
   }
 
   // The main grunt task
-  grunt.registerMultiTask('ftp-deploy', 'Deploy code over FTP', function() {
+  grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
     var done = this.async();
 
     // Init
