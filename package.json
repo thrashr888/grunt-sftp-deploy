@@ -1,11 +1,11 @@
 {
   "name": "grunt-sftp-deploy",
   "description": "Deployment over SFTP",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/thrashr888/grunt-sftp-deploy",
   "author": {
-    "name": "Zoran Nakev",
-    "email": "zoran.nakev@gmail.com"
+    "name": "Paul Thrasher",
+    "email": "thrashr888@gmail.com"
   },
   "repository": {
     "type": "git",
@@ -30,11 +30,5 @@
   "keywords": [
     "gruntplugin"
   ],
-  "readme": "# grunt-sftp-deploy\n\nThis is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _ftp_ protocol.\n\nThese days _git_ is not only our goto code management tool but in many cases our deployment tool as well. But there are many cases where _git_ is not really fit for deployment:\n\n- we deploy to servers with only _ftp_ access\n- the production code is a result of a build process producing files that we do not necessarily track with _git_\n\nThis is why a _grunt_ task like this would be very useful.\n\nFor simplicity purposes this task avoids deleting any files and it is not trying to do any size or time stamp comparison. It simply transfers all the files (and folder structure) from your dev / build location to a location on your server.\n\n## Usage\n\nTo use this task you will need to include the following configuration in your _grunt_ file:\n\n```javascript\n'ftp-deploy': {\n  build: {\n    auth: {\n      host: 'server.com',\n      port: 21,\n      authKey: 'key1'\n    },\n    src: '/path/to/source/folder',\n    dest: '/path/to/destination/folder',\n    exclusions: ['/path/to/source/folder/**/.DS_Store', '/path/to/source/folder/**/Thumbs.db', 'dist/tmp']\n  }\n}\n```\n\nand load the task:\n\n```javascript\ngrunt.loadNpmTasks('grunt-ftp-deploy');\n```\n\nThe parameters in our configuration are:\n\n- **host** - the name or the IP address of the server we are deploying to\n- **port** - the port that the _ftp_ service is running on\n- **authKey** - a key for looking up the saved credentials\n- **src** - the source location, the local folder that we are transferring to the server\n- **dest** - the destination location, the folder on the server we are deploying to\n- **exclusions** - an optional parameter allowing us to exclude files and folders by utilizing grunt's support for `minimatch`. Please note that the definitions should be relative to the project root.\n\n## Authentication parameters\n\nUsernames and passwords are stored as a JSON object in a file named `.ftppass` file that should have the following format:\n\n```javascript\n{\n  'key1': {\n    'username': 'username1',\n    'password': 'password1'\n  },\n  'key2': {\n    'username': 'username2',\n    'password': 'password2'\n  }\n}\n```\n\nThis way we can save as many username / password combinations as we want and look them up by the `authKey` value defined in the _grunt_ config file where the rest of the target parameters are defined.\n\n## Dependencies\n\nThis task is built by taking advantage of the great work of mscdex and his [ssh](https://github.com/mscdex/ssh2) _node.js_ module.\n\n",
-  "readmeFilename": "README.md",
-  "_id": "grunt-sftp-deploy@0.0.1",
-  "dist": {
-  },
-  "_from": "grunt-sftp-deploy@",
-  "_resolved": "https://registry.npmjs.org/grunt-sftp-deploy/-/grunt-sftp-deploy-0.0.1.tgz"
+  "readmeFilename": "README.md"
 }
