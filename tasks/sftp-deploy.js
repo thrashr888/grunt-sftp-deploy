@@ -2,9 +2,9 @@
 // Grunt Task File
 // ---------------
 //
-// Task: FTP Deploy
-// Description: Deploy code over FTP
-// Dependencies: jsftp
+// Task: SFTP Deploy
+// Description: Deploy code over SFTP
+// Dependencies: ssh2
 //
 
 module.exports = function(grunt) {
@@ -173,20 +173,20 @@ module.exports = function(grunt) {
     });
 
     sshConn.on('connect', function () {
-      console.log('Connection :: connect');
+      // console.log('Connection :: connect');
     });
     sshConn.on('error', function (err) {
       console.log('Connection :: error ::', err);
     });
     sshConn.on('end', function () {
-      console.log('Connection :: end');
+      // console.log('Connection :: end');
     });
     sshConn.on('close', function (had_error) {
-      console.log('Connection :: close', had_error);
+      // console.log('Connection :: close', had_error);
     });
 
     sshConn.on('ready', function () {
-      console.log('Connection :: ready');
+      // console.log('Connection :: ready');
 
       sshConn.sftp(function (err, sftp) {
         if (err) throw err;
@@ -194,11 +194,11 @@ module.exports = function(grunt) {
         sftpConn = sftp;
 
         sftp.on('end', function () {
-          console.log('SFTP :: SFTP session closed');
-          console.trace();
+          // console.log('SFTP :: SFTP session closed');
+          // console.trace();
         });
         sftp.on('close', function () {
-          console.log('SFTP :: close');
+          // console.log('SFTP :: close');
           // console.trace();
           sshConn.end();
         });
@@ -207,11 +207,11 @@ module.exports = function(grunt) {
           sshConn.end();
         });
         sftp.on('open', function (e) {
-          console.log('SFTP :: open');
+          // console.log('SFTP :: open');
         });
 
         var locations = _.keys(toTransfer);
-        console.dir(locations);
+        // console.dir(locations);
 
         // Iterating through all location from the `localRoot` in parallel
         async.forEachSeries(locations, sftpProcessLocation, function() {
@@ -221,8 +221,6 @@ module.exports = function(grunt) {
 
       });
     });
-
-    // sshConn.end();
 
     if (grunt.errors) {
       return false;

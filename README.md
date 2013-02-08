@@ -1,10 +1,10 @@
-# grunt-ftp-deploy
+# grunt-sftp-deploy
 
-This is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _ftp_ protocol.
+This is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _sftp_ protocol.
 
 These days _git_ is not only our goto code management tool but in many cases our deployment tool as well. But there are many cases where _git_ is not really fit for deployment:
 
-- we deploy to servers with only _ftp_ access
+- we deploy to servers with only _sftp_ access
 - the production code is a result of a build process producing files that we do not necessarily track with _git_
 
 This is why a _grunt_ task like this would be very useful.
@@ -16,7 +16,7 @@ For simplicity purposes this task avoids deleting any files and it is not trying
 To use this task you will need to include the following configuration in your _grunt_ file:
 
 ```javascript
-'ftp-deploy': {
+'sftp-deploy': {
   build: {
     auth: {
       host: 'server.com',
@@ -33,13 +33,13 @@ To use this task you will need to include the following configuration in your _g
 and load the task:
 
 ```javascript
-grunt.loadNpmTasks('grunt-ftp-deploy');
+grunt.loadNpmTasks('grunt-sftp-deploy');
 ```
 
 The parameters in our configuration are:
 
 - **host** - the name or the IP address of the server we are deploying to
-- **port** - the port that the _ftp_ service is running on
+- **port** - the port that the _sftp_ service is running on
 - **authKey** - a key for looking up the saved credentials
 - **src** - the source location, the local folder that we are transferring to the server
 - **dest** - the destination location, the folder on the server we are deploying to
@@ -66,5 +66,5 @@ This way we can save as many username / password combinations as we want and loo
 
 ## Dependencies
 
-This task is built by taking advantage of the great work of Sergi Mansilla and his [jsftp](https://github.com/sergi/jsftp) _node.js_ module.
+This task is built by taking advantage of the great work of Brian White and his [ssh2](https://github.com/mscdex/ssh2) _node.js_ module.
 
