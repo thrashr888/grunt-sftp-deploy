@@ -73,20 +73,27 @@ module.exports = function(grunt) {
 
   // A method for uploading a single file
   function sftpPut(inFilename, cb) {
+    var fromFile, toFile, from, to;
+
     if (inFilename == '.gitignore') {
       cb(null);
       return true;
     }
 
-    var fromFile = localRoot + path.sep + inFilename;
-    var toFile = remoteRoot + path.sep + inFilename;
+    if (currPath !== '/') {
+      fromFile = localRoot + path.sep + currPath + path.sep + inFilename;
+      toFile = remoteRoot + path.sep + currPath + path.sep + inFilename;
+    } else {
+      fromFile = localRoot + path.sep + inFilename;
+      toFile = remoteRoot + path.sep + inFilename;
+    }
     // console.log(fromFile + ' to ' + toFile);
     process.stdout.write(fromFile + ' to ' + toFile);
 
-    var from = fs.createReadStream(fromFile);
-    var to = sftpConn.createWriteStream(toFile, {
+    from = fs.createReadStream(fromFile);
+    to = sftpConn.createWriteStream(toFile, {
       flags: 'w',
-      mode: 0755
+      mode: 755
     });
     // var to = process.stdout;
 
@@ -119,9 +126,9 @@ module.exports = function(grunt) {
 
     currPath = inPath;
     files = toTransfer[inPath];
-    remotePath = remoteRoot + inPath;
+    remotePath = remoteRoot + (inPath == '/' ? inPath : path.sep + inPath);
 
-    sftpConn.mkdir(remotePath, {permissions: 0775}, function(err) {
+    sftpConn.mkdir(remotePath, {permissions: 775}, function(err) {
       console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
 
       // console.log(async);
@@ -138,7 +145,7 @@ module.exports = function(grunt) {
 
     if (fs.existsSync('.ftppass')) {
       tmpStr = grunt.file.read('.ftppass');
-      if (inKey != null && tmpStr.length) retVal = JSON.parse(tmpStr)[inKey];
+      if (inKey !== null && tmpStr.length) retVal = JSON.parse(tmpStr)[inKey];
     }
     return retVal;
   }
@@ -160,7 +167,7 @@ module.exports = function(grunt) {
     // console.log('toTransfer', toTransfer);
 
     // Checking if we have all the necessary credentilas before we proceed
-    if (authVals == null || authVals.username == null || authVals.password == null) {
+    if (authVals === null || authVals.username === null || authVals.password === null) {
       grunt.warn('Username or Password not found!');
     }
     log.ok('log in as ' + authVals.username);
