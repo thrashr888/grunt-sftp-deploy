@@ -195,7 +195,7 @@ module.exports = function(grunt) {
     // Use either password or key-based login
     if (authVals === null) {
       grunt.warn('.ftppass seems to be missing or incomplete');
-    } else if (authVals.key) {
+    } else if (authVals.password === undefined) {
       keyLocation = getKeyLocation(authVals.keyLocation);
       connection.privateKey = fs.readFileSync(keyLocation);
       if (authVals.passphrase) connection.passphrase = authVals.passphrase;
