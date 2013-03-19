@@ -47,7 +47,7 @@ The parameters in our configuration are:
 
 ## Authentication parameters
 
-Usernames and passwords are stored as a JSON object in a file named `.ftppass` file that should have the following format:
+Usernames, passwords, and private key references are stored as a JSON object in a file named `.ftppass`. This file should be omitted from source control. It uses the following format:
 
 ```javascript
 {
@@ -58,9 +58,28 @@ Usernames and passwords are stored as a JSON object in a file named `.ftppass` f
   "key2": {
     "username": "username2",
     "password": "password2"
+  },
+  "privateKey": {
+    "key": true,
+    "username": "username"
+  },
+  "privateKeyEncrypted": {
+    "key": true,
+    "username": "username",
+    "passphrase": "passphrase1"
+  },
+  "privateKeyCustom": {
+    "key": true,
+    "username": "username",
+    "passphrase": "passphrase1",
+    "keyLocation": "/full/path/to/key"
   }
 }
 ```
+
+If `keyLocation` is not specified, `grunt-sftp-deploy` looks for keys at `~/.ssh/id_dsa` and `/.ssh/id_rsa`.
+
+You can supply passwords for encrypted keys with the `passphrase` attribute.
 
 This way we can save as many username / password combinations as we want and look them up by the `authKey` value defined in the _grunt_ config file where the rest of the target parameters are defined.
 
