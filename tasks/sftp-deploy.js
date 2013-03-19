@@ -109,7 +109,7 @@ module.exports = function(grunt) {
 
     to.on('close', function(){
       // console.log('sftp.close to', inFilename);
-      process.stdout.write('done.'+"\n");
+      process.stdout.write(' done'+"\n");
       // sftpConn.end();
       cb(null);
     });
@@ -150,9 +150,30 @@ module.exports = function(grunt) {
     return retVal;
   }
 
+  function getKeyLocation(customKey) {
+    var keyLocation = null;
+    var defaultKeys = [
+      process.env.HOME + '/.ssh/id_dsa',
+      process.env.HOME + '/.ssh/id_rsa'
+    ];
+
+    if (customKey) {
+      if (fs.existsSync(customKey)) keyLocation = customKey;
+    } else {
+      for (i = 0; i < defaultKeys.length; i++) {
+        if (fs.existsSync(defaultKeys[i])) keyLocation = defaultKeys[i];
+      }
+    }
+
+    if (keyLocation === null) grunt.warn('Could not find private key.');
+    return keyLocation;
+  }
+
   // The main grunt task
   grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
     var done = this.async();
+    var connection = {};
+    var keyLocation;
 
     // Init
     sshConn = new SSHConnection();
@@ -161,23 +182,30 @@ module.exports = function(grunt) {
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     authVals = getAuthByKey(this.data.auth.authKey);
     exclusions = this.data.exclusions || [];
+
     toTransfer = dirParseSync(localRoot);
-    // console.log('localRoot', localRoot);
-    // console.log('remoteRoot', remoteRoot);
-    // console.log('toTransfer', toTransfer);
 
-    // Checking if we have all the necessary credentilas before we proceed
-    if (authVals === null || authVals.username === null || authVals.password === null) {
-      grunt.warn('Username or Password not found!');
-    }
-    log.ok('log in as ' + authVals.username);
-
-    sshConn.connect({
+    connection = {
       host: this.data.auth.host,
       port: this.data.auth.port,
-      username: authVals.username,
-      password: authVals.password
-    });
+      username: authVals.username
+    };
+
+
+    // Use either password or key-based login
+    if (authVals === null) {
+      grunt.warn('.ftppass seems to be missing or incomplete');
+    } else if (authVals.password === undefined) {
+      keyLocation = getKeyLocation(authVals.keyLocation);
+      connection.privateKey = fs.readFileSync(keyLocation);
+      if (authVals.passphrase) connection.passphrase = authVals.passphrase;
+      log.ok('Logging in with key at ' + keyLocation);
+    } else {
+      connection.password = authVals.password;
+      log.ok('Logging in with username ' + authVals.username);
+    }
+
+    sshConn.connect(connection);
 
     sshConn.on('connect', function () {
       // console.log('Connection :: connect');
@@ -222,7 +250,7 @@ module.exports = function(grunt) {
 
         // Iterating through all location from the `localRoot` in parallel
         async.forEachSeries(locations, sftpProcessLocation, function() {
-          log.ok('uploads done');
+          log.ok('Uploads done.');
           sftp.end();
         });
 
