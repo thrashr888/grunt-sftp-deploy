@@ -80,7 +80,7 @@ module.exports = function(grunt) {
       return true;
     }
 
-    if (currPath !== '/') {
+    if (currPath !== path.sep) {
       fromFile = localRoot + path.sep + currPath + path.sep + inFilename;
       toFile = remoteRoot + path.sep + currPath + path.sep + inFilename;
     } else {
@@ -126,7 +126,7 @@ module.exports = function(grunt) {
 
     currPath = inPath;
     files = toTransfer[inPath];
-    remotePath = remoteRoot + (inPath == '/' ? inPath : path.sep + inPath);
+    remotePath = remoteRoot + (inPath == path.sep ? inPath : path.sep + inPath);
 
     sftpConn.mkdir(remotePath, {mode: 775}, function(err) {
       console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
