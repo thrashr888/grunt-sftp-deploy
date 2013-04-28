@@ -252,6 +252,7 @@ module.exports = function(grunt) {
         async.forEachSeries(locations, sftpProcessLocation, function() {
           log.ok('Uploads done.');
           sftp.end();
+          done();
         });
 
       });
