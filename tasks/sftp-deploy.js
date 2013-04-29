@@ -93,7 +93,7 @@ module.exports = function(grunt) {
     from = fs.createReadStream(fromFile);
     to = sftpConn.createWriteStream(toFile, {
       flags: 'w',
-      mode: 755
+      mode: 0644
     });
     // var to = process.stdout;
 
@@ -128,7 +128,7 @@ module.exports = function(grunt) {
     files = toTransfer[inPath];
     remotePath = remoteRoot + (inPath == path.sep ? inPath : path.sep + inPath);
 
-    sftpConn.mkdir(remotePath, {mode: 775}, function(err) {
+    sftpConn.mkdir(remotePath, {mode: 0755}, function(err) {
       console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
 
       // console.log(async);
