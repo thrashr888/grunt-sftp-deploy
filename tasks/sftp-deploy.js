@@ -88,33 +88,43 @@ module.exports = function(grunt) {
       toFile = remoteRoot + path.sep + inFilename;
     }
     // console.log(fromFile + ' to ' + toFile);
-    process.stdout.write(fromFile + ' to ' + toFile);
+    log.write(fromFile + ' to ' + toFile);
 
-    from = fs.createReadStream(fromFile);
-    to = sftpConn.createWriteStream(toFile, {
-      flags: 'w',
-      mode: 0644
-    });
-    // var to = process.stdout;
+    sftpConn.fastPut( fromFile, toFile, function(err){
+      if (err){
+        log.write('Error uploading file'.red + "\n");
+        done(false);
+      } else {
+        log.write(' done'.green + "\n" );
+        cb(null);
+      }
+    } );
 
-    from.on('data', function(){
-      // console.log('fs.data ', inFilename);
-      process.stdout.write('.');
-    });
-
-    from.on('close', function(){
-      // console.log('fs.close from', inFilename);
-      // sftpConn.end();
-    });
-
-    to.on('close', function(){
-      // console.log('sftp.close to', inFilename);
-      process.stdout.write(' done'+"\n");
-      // sftpConn.end();
-      cb(null);
-    });
-
-    from.pipe(to);
+//    from = fs.createReadStream(fromFile);
+//    to = sftpConn.createWriteStream(toFile, {
+//      flags: 'w',
+//      mode: 0644
+//    });
+//    // var to = process.stdout;
+//
+//    from.on('data', function(){
+//      // console.log('fs.data ', inFilename);
+//      process.stdout.write('.');
+//    });
+//
+//    from.on('close', function(){
+////       console.log('fs.close from', inFilename);
+//      // sftpConn.end();
+//    });
+//
+//    to.on('close', function(){
+//      // console.log('sftp.close to', inFilename);
+//      process.stdout.write(' done'+"\n");
+//      // sftpConn.end();
+//      cb(null);
+//    });
+//
+//    from.pipe(to);
   }
 
   // A method that processes a location - changes to a folder and uploads all respective files
