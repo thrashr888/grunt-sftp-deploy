@@ -25,7 +25,9 @@ module.exports = function(grunt) {
   var sshConn;
   var localRoot;
   var remoteRoot;
+  var remoteSep;
   var currPath;
+  var remotePath;
   var authVals;
   var exclusions;
 
@@ -80,12 +82,18 @@ module.exports = function(grunt) {
       return true;
     }
 
+    if(currPath.indexOf(path.sep) !== -1){
+      remotePath = currPath.replace(path.sep, remoteSep);
+    }else{
+      remotePath = currPath;
+    }
+
     if (currPath !== path.sep) {
       fromFile = localRoot + path.sep + currPath + path.sep + inFilename;
-      toFile = remoteRoot + path.sep + currPath + path.sep + inFilename;
+      toFile = remoteRoot + remoteSep + remotePath + remoteSep + inFilename;
     } else {
       fromFile = localRoot + path.sep + inFilename;
-      toFile = remoteRoot + path.sep + inFilename;
+      toFile = remoteRoot + remoteSep + inFilename;
     }
     // console.log(fromFile + ' to ' + toFile);
     process.stdout.write(fromFile + ' to ' + toFile);
@@ -126,7 +134,14 @@ module.exports = function(grunt) {
 
     currPath = inPath;
     files = toTransfer[inPath];
-    remotePath = remoteRoot + (inPath == path.sep ? inPath : path.sep + inPath);
+
+    if(inPath.indexOf(path.sep) !== -1){
+      remoteInPath = inPath.replace(path.sep, remoteSep);
+    }else{
+      remoteInPath = inPath;
+    }
+
+    remotePath = remoteRoot + (remoteInPath == remoteSep ? remoteInPath : remoteSep + remoteInPath);
 
     sftpConn.mkdir(remotePath, {mode: 775}, function(err) {
       console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
@@ -180,6 +195,8 @@ module.exports = function(grunt) {
 
     localRoot = Array.isArray(this.data.src) ? this.data.src[0] : this.data.src;
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
+    remoteSep = this.data.server_sep ? this.data.server_sep : path.sep;
+
     authVals = getAuthByKey(this.data.auth.authKey);
     exclusions = this.data.exclusions || [];
 
