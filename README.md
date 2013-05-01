@@ -25,7 +25,8 @@ To use this task you will need to include the following configuration in your _g
     },
     src: '/path/to/source/folder',
     dest: '/path/to/destination/folder',
-    exclusions: ['/path/to/source/folder/**/.DS_Store', '/path/to/source/folder/**/Thumbs.db', 'dist/tmp']
+    exclusions: ['/path/to/source/folder/**/.DS_Store', '/path/to/source/folder/**/Thumbs.db', 'dist/tmp'],
+    server_sep: '/'
   }
 }
 ```
@@ -43,7 +44,8 @@ The parameters in our configuration are:
 - **authKey** - a key for looking up the saved credentials
 - **src** - the source location, the local folder that we are transferring to the server
 - **dest** - the destination location, the folder on the server we are deploying to
-- **exclusions** - an optional parameter allowing us to exclude files and folders by utilizing grunt's support for `minimatch`. Please note that the definitions should be relative to the project root.
+- **exclusions** - an optional parameter allowing us to exclude files and folders by utilizing grunt's support for `minimatch`. Please note that the definitions should be relative to the project root
+- **server_sep** - an optional parameter allowing you to define the server separator in case it differs from your local environment. Useful if you deploy from Windows to Unix
 
 ## Authentication parameters
 
