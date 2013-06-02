@@ -214,22 +214,27 @@ module.exports = function(grunt) {
 
     connection = {
       host: this.data.auth.host,
-      port: this.data.auth.port,
-      username: authVals.username
+      port: this.data.auth.port
     };
 
 
     // Use either password or key-based login
     if (authVals === null) {
       grunt.warn('.ftppass seems to be missing or incomplete');
-    } else if (authVals.password === undefined) {
-      keyLocation = getKeyLocation(authVals.keyLocation);
-      connection.privateKey = fs.readFileSync(keyLocation);
-      if (authVals.passphrase) connection.passphrase = authVals.passphrase;
-      log.ok('Logging in with key at ' + keyLocation);
     } else {
-      connection.password = authVals.password;
-      log.ok('Logging in with username ' + authVals.username);
+
+      connection.username = authVals.username;
+
+      if (authVals.password === undefined) {
+        keyLocation = getKeyLocation(authVals.keyLocation);
+        connection.privateKey = fs.readFileSync(keyLocation);
+        if (authVals.passphrase) connection.passphrase = authVals.passphrase;
+        log.ok('Logging in with key at ' + keyLocation);
+      } else {
+        connection.password = authVals.password;
+        log.ok('Logging in with username ' + authVals.username);
+      }
+
     }
 
     sshConn.connect(connection);
