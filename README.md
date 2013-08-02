@@ -20,7 +20,7 @@ To use this task you will need to include the following configuration in your _g
   build: {
     auth: {
       host: 'server.com',
-      port: 21,
+      port: 22,
       authKey: 'key1'
     },
     src: '/path/to/source/folder',
