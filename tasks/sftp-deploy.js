@@ -83,7 +83,7 @@ module.exports = function(grunt) {
     }
 
     if(currPath.indexOf(path.sep) !== -1){
-      remotePath = currPath.replace(path.sep, remoteSep);
+      remotePath = currPath.split(path.sep).join(remoteSep);
     }else{
       remotePath = currPath;
     }
@@ -146,7 +146,7 @@ module.exports = function(grunt) {
     files = toTransfer[inPath];
 
     if(inPath.indexOf(path.sep) !== -1){
-      remoteInPath = inPath.replace(path.sep, remoteSep);
+      remoteInPath = inPath.split(path.sep).join(remoteSep);
     }else{
       remoteInPath = inPath;
     }
