@@ -100,10 +100,10 @@ module.exports = function(grunt) {
 
     sftpConn.fastPut( fromFile, toFile, function(err){
       if (err){
-        log.write('Error uploading file'.red + "\n");
-        done(false);
+        log.write((' Error uploading file: ' + err.message).red + '\n');
+        cb(false);
       } else {
-        log.write(' done'.green + "\n" );
+        log.write(' done'.green + '\n' );
         cb(null);
       }
     } );
