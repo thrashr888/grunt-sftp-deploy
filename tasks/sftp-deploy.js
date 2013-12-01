@@ -53,13 +53,13 @@ module.exports = function(grunt) {
     files = fs.readdirSync(startDir);
     for (i = 0; i < files.length; i++) {
       currFile = startDir + path.sep + files[i];
-      if (!file.isMatch(exclusions, currFile)) {
+      if (!file.isMatch({matchBase: true}, exclusions, currFile)) {
         if (file.isDir(currFile)) {
           tmpPath = path.relative(localRoot, startDir + path.sep + files[i]);
           if (!_.has(result, tmpPath)) {
             result[tmpPath] = [];
           }
-          dirParseSync(startDir + path.sep + files[i], result);
+          dirParseSync(currFile, result);
         } else {
           tmpPath = path.relative(localRoot, startDir);
           if (!tmpPath.length) {
