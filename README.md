@@ -11,6 +11,8 @@ This is why a _grunt_ task like this would be very useful.
 
 For simplicity purposes this task avoids deleting any files and it is not trying to do any size or time stamp comparison. It simply transfers all the files (and folder structure) from your dev / build location to a location on your server.
 
+[![NPM](https://nodei.co/npm/grunt-sftp-deploy.png?downloads=true&stars=true)](https://nodei.co/npm/grunt-sftp-deploy/)
+
 ## Usage
 
 To use this task you will need to include the following configuration in your _grunt_ file:
