@@ -30,6 +30,9 @@ module.exports = function(grunt) {
   var remotePath;
   var authVals;
   var exclusions;
+  var cacheEnabled;
+  var cache;
+  var cacheFileName = process.cwd() + '/node_modules/grunt-sftp-deploy/cache.json';
 
   // A method for parsing the source location and storing the information into a suitably formated object
   function dirParseSync(startDir, result) {
@@ -98,15 +101,31 @@ module.exports = function(grunt) {
     // console.log(fromFile + ' to ' + toFile);
     log.write(fromFile + ' to ' + toFile);
 
-    sftpConn.fastPut( fromFile, toFile, function(err){
-      if (err){
-        log.write((' Error uploading file: ' + err.message).red + '\n');
-        cb(false);
-      } else {
-        log.write(' done'.green + '\n' );
-        cb(null);
-      }
-    } );
+    var upload = function(fromFile, toFile, cb) {
+      sftpConn.fastPut( fromFile, toFile, function(err) {
+        if (err){
+          log.write((' Error uploading file: ' + err.message).red + '\n');
+          cb(false);
+        } else {
+          log.write(' done'.green + '\n' );
+          cb(null);
+        }
+      } );
+    };
+
+    if (cacheEnabled) {
+      fs.stat(fromFile, function(err, fromFileData){
+        if (cache[fromFile] && +new Date(cache[fromFile]) >= +new Date(fromFileData.mtime)) {
+          log.write(' cached'.magenta + '\n' );
+          cb(null);
+        } else {
+          cache[fromFile] = fromFileData.mtime;
+          upload(fromFile, toFile, cb);
+        }
+      } );
+    } else {
+      upload(fromFile, toFile, cb);
+    }
 
 //    from = fs.createReadStream(fromFile);
 //    to = sftpConn.createWriteStream(toFile, {
@@ -199,6 +218,11 @@ module.exports = function(grunt) {
     var done = this.async();
     var connection = {};
     var keyLocation;
+    cacheEnabled = this.data.cache || false;
+
+    if (cacheEnabled) {
+      cache = JSON.parse(fs.readFileSync(cacheFileName) || {});
+    }
 
     // Init
     sshConn = new SSHConnection();
@@ -282,8 +306,11 @@ module.exports = function(grunt) {
 
         // Iterating through all location from the `localRoot` in parallel
         async.forEachSeries(locations, sftpProcessLocation, function() {
-          log.ok('Uploads done.');
           sftp.end();
+          if (cacheEnabled) {
+            fs.writeFileSync(cacheFileName, JSON.stringify(cache) || {});
+          }
+          log.ok('Uploads done.');
           done();
         });
 
