@@ -30,9 +30,10 @@ module.exports = function(grunt) {
   var remotePath;
   var authVals;
   var exclusions;
-  var cacheEnabled;
+
   var cache;
-  var cacheFileName = process.cwd() + '/node_modules/grunt-sftp-deploy/cache.json';
+  var cacheEnabled;
+  var cacheFileName;
 
   // A method for parsing the source location and storing the information into a suitably formated object
   function dirParseSync(startDir, result) {
@@ -98,10 +99,9 @@ module.exports = function(grunt) {
       fromFile = localRoot + path.sep + inFilename;
       toFile = remoteRoot + remoteSep + inFilename;
     }
-    // console.log(fromFile + ' to ' + toFile);
-    log.write(fromFile + ' to ' + toFile);
 
     var upload = function(fromFile, toFile, cb) {
+      log.write(fromFile + ' to ' + toFile);
       sftpConn.fastPut( fromFile, toFile, function(err) {
         if (err){
           log.write((' Error uploading file: ' + err.message).red + '\n');
@@ -116,7 +116,6 @@ module.exports = function(grunt) {
     if (cacheEnabled) {
       fs.stat(fromFile, function(err, fromFileData){
         if (cache[fromFile] && +new Date(cache[fromFile]) >= +new Date(fromFileData.mtime)) {
-          log.write(' cached'.magenta + '\n' );
           cb(null);
         } else {
           cache[fromFile] = fromFileData.mtime;
@@ -218,10 +217,20 @@ module.exports = function(grunt) {
     var done = this.async();
     var connection = {};
     var keyLocation;
-    cacheEnabled = this.data.cache || false;
+    cacheEnabled = !!this.data.cache;
+    cacheFileName = this.data.cache;
 
     if (cacheEnabled) {
-      cache = JSON.parse(fs.readFileSync(cacheFileName) || {});
+      if (fs.existsSync(cacheFileName)) {
+        try{
+          cache = JSON.parse(fs.readFileSync(cacheFileName) || {});
+        } catch(e) {
+          cache = {};
+        }
+      } else {
+        fs.writeFileSync(cacheFileName, '{}');
+        cache = {};
+      }
     }
 
     // Init

@@ -23,7 +23,7 @@ To use this task you will need to include the following configuration in your _g
       port: 22,
       authKey: 'key1'
     },
-    cache: true,
+    cache: 'sftpCache.json',
     src: '/path/to/source/folder',
     dest: '/path/to/destination/folder',
     exclusions: ['/path/to/source/folder/**/.DS_Store', '/path/to/source/folder/**/Thumbs.db', 'dist/tmp'],
@@ -43,7 +43,7 @@ The parameters in our configuration are:
 - **host** - the name or the IP address of the server we are deploying to
 - **port** - the port that the _sftp_ service is running on
 - **authKey** - a key for looking up the saved credentials
-- **cache** - true/false if files should be cached, so overwriten are only the files that has been changed (it works only for your local copy, so if someone else uploaded something meanwhile it will not be catched)
+- **cache** - boolean/string - put false or omit this parameter for no cache, otherwise provide path to cache file, so overwriten are only the files that has been changed (it works only for your local copy, so if someone else uploaded something meanwhile it will not be catched). Path is relative to your gruntfile, so you can easily clear cache by erasing this json file. This file should be omitted from source control.
 - **src** - the source location, the local folder that we are transferring to the server
 - **dest** - the destination location, the folder on the server we are deploying to
 - **exclusions** - an optional parameter allowing us to exclude files and folders by utilizing grunt's support for `minimatch`. Please note that the definitions should be relative to the project root
