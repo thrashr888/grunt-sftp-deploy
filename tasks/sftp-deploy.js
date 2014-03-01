@@ -217,7 +217,6 @@ module.exports = function(grunt) {
       port: this.data.auth.port
     };
 
-
     // Use either password or key-based login
     if (authVals === null) {
       grunt.warn('.ftppass seems to be missing or incomplete');
@@ -240,16 +239,16 @@ module.exports = function(grunt) {
     sshConn.connect(connection);
 
     sshConn.on('connect', function () {
-      // console.log('Connection :: connect');
+      grunt.verbose.writeln('Connection :: connect');
     });
     sshConn.on('error', function (err) {
       console.log('Connection :: error ::', err);
     });
     sshConn.on('end', function () {
-      // console.log('Connection :: end');
+      grunt.verbose.writeln('Connection :: end');
     });
     sshConn.on('close', function (had_error) {
-      // console.log('Connection :: close', had_error);
+      grunt.verbose.writeln('Connection :: close', had_error);
     });
 
     sshConn.on('ready', function () {
@@ -261,11 +260,11 @@ module.exports = function(grunt) {
         sftpConn = sftp;
 
         sftp.on('end', function () {
-          // console.log('SFTP :: SFTP session closed');
+          grunt.verbose.writeln('SFTP :: SFTP session closed');
           // console.trace();
         });
         sftp.on('close', function () {
-          // console.log('SFTP :: close');
+          grunt.verbose.writeln('SFTP :: close');
           // console.trace();
           sshConn.end();
         });
@@ -274,7 +273,7 @@ module.exports = function(grunt) {
           sshConn.end();
         });
         sftp.on('open', function (e) {
-          // console.log('SFTP :: open');
+          grunt.verbose.writeln('SFTP :: open');
         });
 
         var locations = _.keys(toTransfer);
@@ -283,7 +282,6 @@ module.exports = function(grunt) {
         // Iterating through all location from the `localRoot` in parallel
         async.forEachSeries(locations, sftpProcessLocation, function() {
           log.ok('Uploads done.');
-          sftp.end();
           done();
         });
 
