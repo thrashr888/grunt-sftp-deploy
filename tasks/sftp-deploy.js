@@ -19,6 +19,7 @@ module.exports = function(grunt) {
   var path = require('path');
   var util = require('util');
   var SSHConnection = require('ssh2');
+  var progress = require('progress');
 
   var toTransfer;
   var sftpConn;
@@ -30,6 +31,7 @@ module.exports = function(grunt) {
   var remotePath;
   var authVals;
   var exclusions;
+  var progressLogger;
 
   // A method for parsing the source location and storing the information into a suitably formated object
   function dirParseSync(startDir, result) {
@@ -96,14 +98,18 @@ module.exports = function(grunt) {
       toFile = remoteRoot + remoteSep + inFilename;
     }
     // console.log(fromFile + ' to ' + toFile);
-    log.write(fromFile + ' to ' + toFile);
+    grunt.verbose.write(fromFile + ' to ' + toFile);
 
     sftpConn.fastPut( fromFile, toFile, function(err){
       if (err){
         log.write((' Error uploading file: ' + err.message).red + '\n');
         cb(false);
       } else {
-        log.write(' done'.green + '\n' );
+        if( grunt.option("verbose") ){
+          log.write(' done'.green + '\n' );
+        }else{
+          progressLogger.tick();
+        }
         cb(null);
       }
     } );
@@ -154,7 +160,11 @@ module.exports = function(grunt) {
     remotePath = remoteRoot + (remoteInPath == remoteSep ? remoteInPath : remoteSep + remoteInPath);
 
     sftpConn.mkdir(remotePath, {mode: 0755}, function(err) {
-      console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
+      if( grunt.option("verbose") ){
+        console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
+      }else{
+        progressLogger.tick();
+      }
 
       // console.log(async);
       async.forEachLimit(files, 1, sftpPut, function (err) {
@@ -194,6 +204,16 @@ module.exports = function(grunt) {
     return keyLocation;
   }
 
+  function getLength(toTransfer){
+    var i = 0;
+    for(var n in toTransfer ){
+      if(!toTransfer[n].substr){
+        i+= getLength(toTransfer[n]);
+      }
+      i++;
+    }
+    return i;
+  }
   // The main grunt task
   grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
     var done = this.async();
@@ -211,6 +231,12 @@ module.exports = function(grunt) {
     exclusions = this.data.exclusions || [];
 
     toTransfer = dirParseSync(localRoot);
+    progressLogger = new progress('  minified=[:current/:total] elapsed=[:elapseds] sprint=[:percent] eta=[:etas] [:bar]', {
+      complete: '=',
+      incomplete: ' ',
+      width: 40,
+      total: getLength(toTransfer)
+    });
 
     connection = {
       host: this.data.auth.host,
