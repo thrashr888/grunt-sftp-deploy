@@ -167,7 +167,7 @@ module.exports = function(grunt) {
       }
 
       // console.log(async);
-      async.forEachLimit(files, 1, sftpPut, function (err) {
+      async.forEachLimit(files, 5, sftpPut, function (err) {
         // console.log('callback');
         cb(null);
       });
@@ -267,8 +267,8 @@ module.exports = function(grunt) {
     sshConn.on('connect', function () {
       grunt.verbose.writeln('Connection :: connect');
     });
-    sshConn.on('error', function (err) {
-      console.log('Connection :: error ::', err);
+    sshConn.on('error', function (e) {
+      grunt.log.error('SFTP :: error', e);
     });
     sshConn.on('end', function () {
       grunt.verbose.writeln('Connection :: end');
@@ -288,17 +288,17 @@ module.exports = function(grunt) {
         sftp.on('end', function () {
           grunt.verbose.writeln('SFTP :: SFTP session closed');
           // console.trace();
+          sshConn.end(done);
         });
         sftp.on('close', function () {
           grunt.verbose.writeln('SFTP :: close');
-          // console.trace();
-          sshConn.end();
+          sshConn.end(done);
         });
         sftp.on('error', function (e) {
-          console.log('SFTP :: error', e);
-          sshConn.end();
+          grunt.log.error('SFTP :: error', e);
+          sshConn.end(done);
         });
-        sftp.on('open', function (e) {
+        sftp.on('open', function () {
           grunt.verbose.writeln('SFTP :: open');
         });
 
