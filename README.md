@@ -28,7 +28,9 @@ To use this task you will need to include the following configuration in your _g
     src: '/path/to/source/folder',
     dest: '/path/to/destination/folder',
     exclusions: ['/path/to/source/folder/**/.DS_Store', '/path/to/source/folder/**/Thumbs.db', 'dist/tmp'],
-    server_sep: '/'
+    server_sep: '/',
+    concurrency: 4,
+    progress: true
   }
 }
 ```
@@ -48,6 +50,11 @@ The parameters in our configuration are:
 - **dest** - the destination location, the folder on the server we are deploying to
 - **exclusions** - an optional parameter allowing us to exclude files and folders by utilizing grunt's support for `minimatch`. Please note that the definitions should be relative to the project root
 - **server_sep** - an optional parameter allowing you to define the server separator in case it differs from your local environment. Useful if you deploy from Windows to Unix
+- **concurrency** - an optional parameter to define the number of concurrent file transfer, default to 4
+- **progress** - an optional parameter to display or not the progress bar
+
+The progress bar is also disabled when --verbose switch is used.
+
 
 ## Authentication parameters
 
