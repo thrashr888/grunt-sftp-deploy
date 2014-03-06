@@ -167,7 +167,7 @@ module.exports = function(grunt) {
       }
 
       // console.log(async);
-      async.forEachLimit(files, 5, sftpPut, function (err) {
+      async.forEachLimit(files, 1, sftpPut, function (err) {
         // console.log('callback');
         cb(null);
       });
@@ -231,7 +231,7 @@ module.exports = function(grunt) {
     exclusions = this.data.exclusions || [];
 
     toTransfer = dirParseSync(localRoot);
-    progressLogger = new progress('  minified=[:current/:total] elapsed=[:elapseds] sprint=[:percent] eta=[:etas] [:bar]', {
+    progressLogger = new progress('  transferred=[:current/:total] elapsed=[:elapseds] overall=[:percent] eta=[:etas] [:bar]', {
       complete: '=',
       incomplete: ' ',
       width: 40,
