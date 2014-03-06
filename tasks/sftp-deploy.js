@@ -146,7 +146,7 @@ module.exports = function(grunt) {
     if (!toTransfer[inPath]) {
       cb(new Error('Data for ' + inPath + ' not found'));
     }
-    var files;
+    var files, remoteInPath;
 
     currPath = inPath;
     files = toTransfer[inPath];
