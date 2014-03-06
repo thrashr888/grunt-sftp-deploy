@@ -187,7 +187,7 @@ module.exports = function(grunt) {
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     remoteSep = this.data.server_sep ? this.data.server_sep : path.sep;
     var concurrency = parseInt(this.data.concurrency) || 4;
-    with_progress = this.data.progress || true;
+    with_progress = this.data.progress || !grunt.option("verbose");
 
     authVals = getAuthByKey(this.data.auth.authKey);
     exclusions = this.data.exclusions || [];
