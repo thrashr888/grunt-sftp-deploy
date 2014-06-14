@@ -19,6 +19,7 @@ module.exports = function(grunt) {
   var path = require('path');
   var util = require('util');
   var SSHConnection = require('ssh2');
+  var progress = require('progress');
 
   var toTransfer;
   var sftpConn;
@@ -26,14 +27,11 @@ module.exports = function(grunt) {
   var localRoot;
   var remoteRoot;
   var remoteSep;
-  var currPath;
-  var remotePath;
   var authVals;
   var exclusions;
-
-  var cache;
-  var cacheEnabled;
-  var cacheFileName;
+  var progressLogger;
+  var transferred = 0;
+  var with_progress = true;
 
   // A method for parsing the source location and storing the information into a suitably formated object
   function dirParseSync(startDir, result) {
@@ -81,87 +79,32 @@ module.exports = function(grunt) {
   function sftpPut(inFilename, cb) {
     var fromFile, toFile, from, to;
 
-    if (inFilename == '.gitignore') {
-      cb(null);
-      return true;
-    }
+    fromFile = localRoot + path.sep + inFilename;
+    toFile = remoteRoot + remoteSep + inFilename;
 
-    if(currPath.indexOf(path.sep) !== -1){
-      remotePath = currPath.split(path.sep).join(remoteSep);
-    }else{
-      remotePath = currPath;
-    }
+    grunt.verbose.write(fromFile + ' to ' + toFile);
 
-    if (currPath !== path.sep) {
-      fromFile = localRoot + path.sep + currPath + path.sep + inFilename;
-      toFile = remoteRoot + remoteSep + remotePath + remoteSep + inFilename;
-    } else {
-      fromFile = localRoot + path.sep + inFilename;
-      toFile = remoteRoot + remoteSep + inFilename;
-    }
+    var f_size = fs.statSync(fromFile).size;
 
-    var upload = function(fromFile, toFile, cb) {
-      log.write(fromFile + ' to ' + toFile);
-      sftpConn.fastPut( fromFile, toFile, function(err) {
-        if (err){
-          log.write((' Error uploading file: ' + err.message).red + '\n');
-          cb(false);
-        } else {
-          log.write(' done'.green + '\n' );
-          cb(null);
-        }
-      } );
-    };
-
-    if (cacheEnabled) {
-      fs.stat(fromFile, function(err, fromFileData){
-        if (cache[fromFile] && +new Date(cache[fromFile]) >= +new Date(fromFileData.mtime)) {
-          cb(null);
-        } else {
-          cache[fromFile] = fromFileData.mtime;
-          upload(fromFile, toFile, cb);
-        }
-      } );
-    } else {
-      upload(fromFile, toFile, cb);
-    }
-
-//    from = fs.createReadStream(fromFile);
-//    to = sftpConn.createWriteStream(toFile, {
-//      flags: 'w',
-//      mode: 0644
-//    });
-//    // var to = process.stdout;
-//
-//    from.on('data', function(){
-//      // console.log('fs.data ', inFilename);
-//      process.stdout.write('.');
-//    });
-//
-//    from.on('close', function(){
-////       console.log('fs.close from', inFilename);
-//      // sftpConn.end();
-//    });
-//
-//    to.on('close', function(){
-//      // console.log('sftp.close to', inFilename);
-//      process.stdout.write(' done'+"\n");
-//      // sftpConn.end();
-//      cb(null);
-//    });
-//
-//    from.pipe(to);
+    sftpConn.fastPut( fromFile, toFile, function(err){
+      if (err){
+        log.write((' Error uploading file: ' + err.message).red + '\n');
+        cb(err);
+      } else {
+        grunt.verbose.write(' done'.green + '\n' );
+        if( with_progress ) progressLogger.tick();
+        transferred += parseInt(f_size/1024);
+        cb(null);
+      }
+    } );
   }
 
   // A method that processes a location - changes to a folder and uploads all respective files
-  function sftpProcessLocation (inPath, cb) {
+  function sftpProcessDirectories (inPath, cb) {
     if (!toTransfer[inPath]) {
       cb(new Error('Data for ' + inPath + ' not found'));
     }
-    var files;
-
-    currPath = inPath;
-    files = toTransfer[inPath];
+    var remoteInPath;
 
     if(inPath.indexOf(path.sep) !== -1){
       remoteInPath = inPath.split(path.sep).join(remoteSep);
@@ -169,16 +112,14 @@ module.exports = function(grunt) {
       remoteInPath = inPath;
     }
 
-    remotePath = remoteRoot + (remoteInPath == remoteSep ? remoteInPath : remoteSep + remoteInPath);
+    var remotePath = remoteRoot + (remoteInPath == remoteSep ?
+      remoteInPath :
+      remoteSep + remoteInPath);
 
     sftpConn.mkdir(remotePath, {mode: 0755}, function(err) {
-      console.log('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
-
-      // console.log(async);
-      async.forEachLimit(files, 1, sftpPut, function (err) {
-        // console.log('callback');
-        cb(null);
-      });
+      grunt.verbose.writeln('mkdir ' + remotePath, err ? 'error or dir exists' : 'ok');
+      if( with_progress ) progressLogger.tick();
+      cb(null);
     });
   }
 
@@ -203,7 +144,7 @@ module.exports = function(grunt) {
     if (customKey) {
       if (fs.existsSync(customKey)) keyLocation = customKey;
     } else {
-      for (i = 0; i < defaultKeys.length; i++) {
+      for (var i = 0; i < defaultKeys.length; i++) {
         if (fs.existsSync(defaultKeys[i])) keyLocation = defaultKeys[i];
       }
     }
@@ -212,44 +153,57 @@ module.exports = function(grunt) {
     return keyLocation;
   }
 
+  function getLength(toTransfer){
+    var i = 0;
+    for(var n in toTransfer ){
+      if(!toTransfer[n].substr){
+        i+= getLength(toTransfer[n]);
+      }
+      i++;
+    }
+    return i;
+  }
+  function getFiles(toTransfer){
+    var ret = [];
+    for(var n in toTransfer ){
+      for( var k in toTransfer[n]){
+        ret.push( (n=="/"?"":n+"/")+toTransfer[n][k]);
+      }
+    }
+    return ret;
+  }
+
+
   // The main grunt task
   grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
     var done = this.async();
-    var connection = {};
-    var keyLocation;
-    cacheEnabled = !!this.data.cache;
-    cacheFileName = this.data.cache;
-
-    if (cacheEnabled) {
-      if (fs.existsSync(cacheFileName)) {
-        try{
-          cache = JSON.parse(fs.readFileSync(cacheFileName) || {});
-        } catch(e) {
-          cache = {};
-        }
-      } else {
-        fs.writeFileSync(cacheFileName, '{}');
-        cache = {};
-      }
-    }
+    var keyLocation,connection;
 
     // Init
     sshConn = new SSHConnection();
 
+    transferred = 0;
     localRoot = Array.isArray(this.data.src) ? this.data.src[0] : this.data.src;
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     remoteSep = this.data.server_sep ? this.data.server_sep : path.sep;
+    var concurrency = parseInt(this.data.concurrency) || 4;
+    with_progress = this.data.progress || !grunt.option("verbose");
 
     authVals = getAuthByKey(this.data.auth.authKey);
     exclusions = this.data.exclusions || [];
 
     toTransfer = dirParseSync(localRoot);
+    progressLogger = new progress('  transferred=[:current/:total] elapsed=[:elapseds] overall=[:percent] eta=[:etas] [:bar]', {
+      complete: '=',
+      incomplete: ' ',
+      width: 40,
+      total: getLength(toTransfer)
+    });
 
     connection = {
       host: this.data.auth.host,
       port: this.data.auth.port
     };
-
 
     // Use either password or key-based login
     if (authVals === null) {
@@ -267,22 +221,33 @@ module.exports = function(grunt) {
         connection.password = authVals.password;
         log.ok('Logging in with username ' + authVals.username);
       }
-
     }
 
+    var has_transferred_all_files = false;
+    var done_handler = function(err){
+      sshConn.end();
+      grunt.log.ok("Transferred : "+(transferred/1024)+" Mb" );
+      if(!has_transferred_all_files || err){
+        grunt.log.writeln(err);
+        grunt.fail.fatal('Transfer did not succeeded');
+      }
+      done();
+    };
+
+    log.ok('Concurrency : ' + concurrency);
     sshConn.connect(connection);
 
     sshConn.on('connect', function () {
-      // console.log('Connection :: connect');
+      grunt.verbose.writeln('Connection :: connect');
     });
-    sshConn.on('error', function (err) {
-      console.log('Connection :: error ::', err);
+    sshConn.on('error', function (e) {
+      grunt.fail.fatal('Connection :: error', e);
     });
-    sshConn.on('end', function () {
-      // console.log('Connection :: end');
+    sshConn.on('end', function (e) {
+      grunt.verbose.writeln('Connection :: end', e);
     });
-    sshConn.on('close', function (had_error) {
-      // console.log('Connection :: close', had_error);
+    sshConn.on('close', function (e) {
+      grunt.verbose.writeln('Connection :: close', e);
     });
 
     sshConn.on('ready', function () {
@@ -293,36 +258,41 @@ module.exports = function(grunt) {
 
         sftpConn = sftp;
 
-        sftp.on('end', function () {
-          // console.log('SFTP :: SFTP session closed');
+        sftp.on('end', function (e) {
+          grunt.verbose.writeln('SFTP :: SFTP session closed',e);
           // console.trace();
         });
-        sftp.on('close', function () {
-          // console.log('SFTP :: close');
-          // console.trace();
-          sshConn.end();
+        sftp.on('close', function (e) {
+          grunt.verbose.writeln('SFTP :: close',e);
+          done_handler();
         });
         sftp.on('error', function (e) {
-          console.log('SFTP :: error', e);
-          sshConn.end();
+          grunt.fail.fatal('SFTP :: error', e);
         });
-        sftp.on('open', function (e) {
-          // console.log('SFTP :: open');
+        sftp.on('open', function () {
+          grunt.verbose.writeln('SFTP :: open');
         });
 
         var locations = _.keys(toTransfer);
         // console.dir(locations);
 
-        // Iterating through all location from the `localRoot` in parallel
-        async.forEachSeries(locations, sftpProcessLocation, function() {
-          sftp.end();
-          if (cacheEnabled) {
-            fs.writeFileSync(cacheFileName, JSON.stringify(cache) || {});
-          }
-          log.ok('Uploads done.');
-          done();
-        });
 
+        // Iterating through all location from the `localRoot` in parallel
+        async.forEachSeries(locations, sftpProcessDirectories, function(err) {
+          grunt.verbose.writeln(' ');
+          log.ok('Directories done.');
+          has_transferred_all_files = false;
+
+          if( err ) done_handler(err);
+
+          // Iterating through all location from the `localRoot` in parallel
+          async.forEachLimit(getFiles(toTransfer), concurrency, sftpPut, function (err) {
+            // console.log('callback');
+            has_transferred_all_files = true;
+            done_handler(err);
+          });
+
+        });
       });
     });
 
