@@ -33,6 +33,10 @@ module.exports = function(grunt) {
   var transferred = 0;
   var with_progress = true;
 
+  var cache;
+  var cacheEnabled;
+  var cacheFileName;
+
   // A method for parsing the source location and storing the information into a suitably formated object
   function dirParseSync(startDir, result) {
     var files;
@@ -86,17 +90,33 @@ module.exports = function(grunt) {
 
     var f_size = fs.statSync(fromFile).size;
 
-    sftpConn.fastPut( fromFile, toFile, function(err){
-      if (err){
-        log.write((' Error uploading file: ' + err.message).red + '\n');
-        cb(err);
-      } else {
-        grunt.verbose.write(' done'.green + '\n' );
-        if( with_progress ) progressLogger.tick();
-        transferred += parseInt(f_size/1024);
-        cb(null);
-      }
-    } );
+    var upload = function(fromFile, toFile, cb) {
+      sftpConn.fastPut( fromFile, toFile, function(err){
+        if (err){
+          log.write((' Error uploading file: ' + err.message).red + '\n');
+          cb(err);
+        } else {
+          grunt.verbose.write(' done'.green + '\n' );
+          if( with_progress ) progressLogger.tick();
+          transferred += parseInt(f_size/1024);
+          cb(null);
+        }
+      });
+    };
+
+    if (cacheEnabled) {
+      fs.stat(fromFile, function(err, fromFileData){
+        if (cache[fromFile] && +new Date(cache[fromFile]) >= +new Date(fromFileData.mtime)) {
+          cb(null);
+        } else {
+          cache[fromFile] = fromFileData.mtime;
+          upload(fromFile, toFile, cb);
+        }
+      } );
+    } else {
+      upload(fromFile, toFile, cb);
+    }
+
   }
 
   // A method that processes a location - changes to a folder and uploads all respective files
@@ -179,6 +199,22 @@ module.exports = function(grunt) {
     var done = this.async();
     var keyLocation,connection;
 
+    cacheEnabled = !!this.data.cache;
+    cacheFileName = this.data.cache;
+
+    if (cacheEnabled) {
+      if (fs.existsSync(cacheFileName)) {
+        try{
+          cache = JSON.parse(fs.readFileSync(cacheFileName) || {});
+        } catch(e) {
+          cache = {};
+        }
+      } else {
+        fs.writeFileSync(cacheFileName, '{}');
+        cache = {};
+      }
+    }
+
     // Init
     sshConn = new SSHConnection();
 
@@ -226,6 +262,9 @@ module.exports = function(grunt) {
     var has_transferred_all_files = false;
     var done_handler = function(err){
       sshConn.end();
+      if (cacheEnabled) {
+        fs.writeFileSync(cacheFileName, JSON.stringify(cache) || {});
+      }
       grunt.log.ok("Transferred : "+(transferred/1024)+" Mb" );
       if(!has_transferred_all_files || err){
         grunt.log.writeln(err);
