@@ -221,7 +221,7 @@ module.exports = function(grunt) {
     transferred = 0;
     localRoot = Array.isArray(this.data.src) ? this.data.src[0] : this.data.src;
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
-    remoteSep = this.data.server_sep ? this.data.server_sep : path.sep;
+    remoteSep = this.data.serverSep ? this.data.serverSep : path.sep;
     var concurrency = parseInt(this.data.concurrency) || 4;
     with_progress = this.data.progress || !grunt.option("verbose");
 
