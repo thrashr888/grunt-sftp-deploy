@@ -1,7 +1,7 @@
 {
   "name": "grunt-sftp-deploy",
   "description": "Deployment over SFTP",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/thrashr888/grunt-sftp-deploy",
   "author": {
     "name": "Paul Thrasher",
