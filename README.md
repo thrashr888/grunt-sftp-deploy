@@ -83,7 +83,11 @@ Usernames, passwords, and private key references are stored as a JSON object in 
     "username": "username",
     "passphrase": "passphrase1",
     "keyLocation": "/full/path/to/key"
-  }
+  },
+  "privateKeyCustom2": {
+    "username": "username",
+    "passphrase": "passphrase2",
+    "keyLocation": "filename-of-key"
 }
 ```
 
