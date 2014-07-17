@@ -164,8 +164,8 @@ module.exports = function(grunt) {
     if (customKey) {
       if (fs.existsSync(customKey)) {
         keyLocation = customKey;
-      } else if (fs.existsSync(process.env.HOME + '/.ssh/' + customKey)) {
-        keyLocation = process.env.HOME + '/.ssh/' + customKey;
+      } else if (fs.existsSync(path.join(process.env.HOME, '.ssh', customKey))) {
+        keyLocation = path.join(process.env.HOME, '.ssh', customKey);
       }
     } else {
       for (var i = 0; i < defaultKeys.length; i++) {
