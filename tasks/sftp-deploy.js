@@ -144,14 +144,18 @@ module.exports = function(grunt) {
   }
 
   function getAuthByKey (inKey) {
-    var tmpStr;
-    var retVal = null;
+    if (process.env[inKey]) {
+      return JSON.parse(process.env[inKey]);
+    } else {
+      var tmpStr;
+      var retVal = null;
 
-    if (fs.existsSync('.ftppass')) {
-      tmpStr = grunt.file.read('.ftppass');
-      if (inKey !== null && tmpStr.length) retVal = JSON.parse(tmpStr)[inKey];
+      if (fs.existsSync('.ftppass')) {
+        tmpStr = grunt.file.read('.ftppass');
+        if (inKey !== null && tmpStr.length) retVal = JSON.parse(tmpStr)[inKey];
+      }
+      return retVal;
     }
-    return retVal;
   }
 
   function getKeyLocation(customKey) {
