@@ -60,7 +60,8 @@ The progress bar is also disabled when --verbose switch is used.
 
 ## Authentication parameters
 
-Usernames, passwords, and private key references are stored as a JSON object in a file named `.ftppass`. This file should be omitted from source control. It uses the following format:
+Usernames, passwords, and private key references are stored as a JSON object either in a file named `.ftppass` or in an environment variable.
+The `.ftppass` file should be omitted from source control. The file or variable uses the following format:
 
 ```javascript
 {
@@ -96,6 +97,18 @@ If `keyLocation` is not specified, `grunt-sftp-deploy` looks for keys at `~/.ssh
 You can supply passwords for encrypted keys with the `passphrase` attribute.
 
 This way we can save as many username / password combinations as we want and look them up by the `authKey` value defined in the _grunt_ config file where the rest of the target parameters are defined.
+
+To use an environement variable instead of the `.ftppass` file, add the JSON string to your `~/.bashrc` (or equivalent), for example:
+```bash
+export GRUNT_SFTP="{
+                    \"username\": \"your-username\",
+                    \"keyLocation\": \"path/to/your/ssh/key\",
+                    \"passphrase\": \"the-key-password\",
+                  }"
+```
+
+Then you simply pass the variable name as the `sftp-deploy` tasks's `authKey` parameter inside your `Gruntfile.js`
+
 
 ## Dependencies
 
