@@ -146,6 +146,13 @@ module.exports = function(grunt) {
   function getAuthByKey (inKey) {
     if (process.env[inKey]) {
       return JSON.parse(process.env[inKey]);
+
+    } else if (fs.existsSync(inKey)) {
+      var tmpStr = grunt.file.read(inKey);
+      var retVal = null;
+      if (inKey !== null && tmpStr.length) retVal = JSON.parse(tmpStr);
+      return retVal;
+
     } else {
       var tmpStr;
       var retVal = null;
