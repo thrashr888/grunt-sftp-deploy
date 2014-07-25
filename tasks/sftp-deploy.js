@@ -143,25 +143,19 @@ module.exports = function(grunt) {
     });
   }
 
-  function getAuthByKey (inKey) {
-    if (process.env[inKey]) {
-      return JSON.parse(process.env[inKey]);
+  function getAuthByKey(inKey) {
+    if (inKey !== null) {
 
-    } else if (fs.existsSync(inKey)) {
-      var tmpStr = grunt.file.read(inKey);
-      var retVal = null;
-      if (inKey !== null && tmpStr.length) retVal = JSON.parse(tmpStr);
-      return retVal;
+      if (process.env[inKey]) {
+        return JSON.parse(process.env[inKey]);
 
-    } else {
-      var tmpStr;
-      var retVal = null;
+      } else if (fs.existsSync(inKey)) {
+        return JSON.parse(grunt.file.read(inKey)) || null;
 
-      if (fs.existsSync('.ftppass')) {
-        tmpStr = grunt.file.read('.ftppass');
-        if (inKey !== null && tmpStr.length) retVal = JSON.parse(tmpStr)[inKey];
+      } else if (fs.existsSync('.ftppass')) {
+        return JSON.parse(grunt.file.read('.ftppass'))[inKey] || null;
       }
-      return retVal;
+
     }
   }
 
