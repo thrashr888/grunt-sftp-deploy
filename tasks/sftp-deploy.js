@@ -84,7 +84,7 @@ module.exports = function(grunt) {
     var fromFile, toFile, from, to;
 
     fromFile = localRoot + path.sep + inFilename;
-    toFile = remoteRoot + remoteSep + inFilename;
+    toFile = remoteRoot + remoteSep + inFilename.split(path.sep).join(remoteSep);
 
     grunt.verbose.write(fromFile + ' to ' + toFile);
 
