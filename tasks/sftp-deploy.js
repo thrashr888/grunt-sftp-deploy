@@ -146,7 +146,10 @@ module.exports = function(grunt) {
   function getAuthByKey(inKey) {
     if (inKey !== null) {
 
-      if (process.env[inKey]) {
+      if (typeof inKey == 'object') {
+        return inKey;
+
+      } else if (process.env[inKey]) {
         return JSON.parse(process.env[inKey]);
 
       } else if (fs.existsSync(inKey)) {
