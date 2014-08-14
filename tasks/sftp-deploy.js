@@ -86,7 +86,7 @@ module.exports = function(grunt) {
     fromFile = localRoot + path.sep + inFilename;
     toFile = remoteRoot + remoteSep + inFilename;
 
-    grunt.verbose.write(fromFile + ' to ' + toFile);
+    grunt.verbose.writeln(fromFile + ' to ' + toFile);
 
     var f_size = fs.statSync(fromFile).size;
 
