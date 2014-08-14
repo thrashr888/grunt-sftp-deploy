@@ -324,24 +324,29 @@ module.exports = function(grunt) {
         var locations = _.keys(toTransfer);
         // console.dir(locations);
 
-
-        // Iterating through all location from the `localRoot` in parallel
-        async.forEachSeries(locations, sftpProcessDirectories, function(err) {
-          grunt.verbose.writeln(' ');
-          log.ok('Directories done.');
-          has_transferred_all_files = false;
-
-          if( err ) done_handler(err);
+        sftpConn.mkdir(remoteRoot, {mode: 0755}, function(err) {
+          // ignore err to not block if dir already exists
+          // if( err ) return done_handler(err);
 
           // Iterating through all location from the `localRoot` in parallel
-          async.forEachLimit(getFiles(toTransfer), concurrency, sftpPut, function (err) {
-            // console.log('callback');
-            has_transferred_all_files = true;
-            done_handler(err);
-          });
+          async.forEachSeries(locations, sftpProcessDirectories, function(err) {
+            grunt.verbose.writeln(' ');
+            log.ok('Directories done.');
+            has_transferred_all_files = false;
 
+            if( err ) done_handler(err);
+
+            // Iterating through all location from the `localRoot` in parallel
+            async.forEachLimit(getFiles(toTransfer), concurrency, sftpPut, function (err) {
+              // console.log('callback');
+              has_transferred_all_files = true;
+              done_handler(err);
+            });
+          });
         });
+
       });
+
     });
 
     if (grunt.errors) {
