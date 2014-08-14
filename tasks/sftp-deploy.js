@@ -324,7 +324,7 @@ module.exports = function(grunt) {
         var locations = _.keys(toTransfer);
         // console.dir(locations);
 
-        sftpConn.mkdir(remoteRoot, {mode: 0755}, function(err) {
+        sftp.mkdir(remoteRoot, {mode: 0755}, function(err) {
           // ignore err to not block if dir already exists
           // if( err ) return done_handler(err);
 
