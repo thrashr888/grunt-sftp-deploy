@@ -272,7 +272,10 @@ module.exports = function(grunt) {
     }
 
     var has_transferred_all_files = false;
+    var already_done = false;
     var done_handler = function(err){
+      if( already_done ) return;
+      already_done = true;
       sshConn.end();
       if (cacheEnabled) {
         fs.writeFileSync(cacheFileName, JSON.stringify(cache) || {});
@@ -293,12 +296,15 @@ module.exports = function(grunt) {
     });
     sshConn.on('error', function (e) {
       grunt.fail.fatal('Connection :: error', e);
+      done_handler();
     });
     sshConn.on('end', function (e) {
       grunt.verbose.writeln('Connection :: end', e);
+      done_handler();
     });
     sshConn.on('close', function (e) {
       grunt.verbose.writeln('Connection :: close', e);
+      done_handler();
     });
 
     sshConn.on('ready', function () {
@@ -311,7 +317,7 @@ module.exports = function(grunt) {
 
         sftp.on('end', function (e) {
           grunt.verbose.writeln('SFTP :: SFTP session closed',e);
-          // console.trace();
+          done_handler();
         });
         sftp.on('close', function (e) {
           grunt.verbose.writeln('SFTP :: close',e);
@@ -319,6 +325,7 @@ module.exports = function(grunt) {
         });
         sftp.on('error', function (e) {
           grunt.fail.fatal('SFTP :: error', e);
+          done_handler();
         });
         sftp.on('open', function () {
           grunt.verbose.writeln('SFTP :: open');
