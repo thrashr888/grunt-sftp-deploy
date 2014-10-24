@@ -84,6 +84,7 @@ module.exports = function(grunt) {
     var fromFile, toFile, from, to;
 
     fromFile = localRoot + path.sep + inFilename;
+    inFilename = inFilename.replace(new RegExp("\\" + path.sep), remoteSep);
     toFile = remoteRoot + remoteSep + inFilename;
 
     grunt.verbose.write(fromFile + ' to ' + toFile);
