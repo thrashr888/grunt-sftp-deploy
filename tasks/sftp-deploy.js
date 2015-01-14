@@ -86,6 +86,10 @@ module.exports = function(grunt) {
     fromFile = localRoot + path.sep + inFilename;
     toFile = remoteRoot + remoteSep + inFilename.split(path.sep).join(remoteSep);
 
+    if(path.sep != remoteSep) {
+      toFile = toFile.replace(new RegExp(path.sep == '\\' ? '\\\\' : '\\/', 'g'), remoteSep);
+    }
+
     grunt.verbose.write(fromFile + ' to ' + toFile);
 
     var f_size = fs.statSync(fromFile).size;
