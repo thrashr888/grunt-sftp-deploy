@@ -213,7 +213,7 @@ module.exports = function(grunt) {
   // The main grunt task
   grunt.registerMultiTask('sftp-deploy', 'Deploy code over SFTP', function() {
     var done = this.async();
-    var keyLocation,connection;
+    var keyLocation,connection,agentSocket;
 
     cacheEnabled = !!this.data.cache;
     cacheFileName = this.data.cache;
@@ -261,10 +261,19 @@ module.exports = function(grunt) {
     if (authVals === null) {
       grunt.warn('.ftppass seems to be missing or incomplete');
     } else {
-
       connection.username = authVals.username;
-
-      if (authVals.password === undefined) {
+      if (authVals.agent === true) {
+        agentSocket = process.env.SSH_AUTH_SOCK;
+        if (agentSocket === undefined) {
+          log.warn('Could not get the ssh-agent socket. Is the SSH_AUTH_SOCK enviroment variable set?');
+        } else {
+          connection.agent = agentSocket;
+          log.ok('Logging in with ssh-agent-based authentication');
+        }
+      } else if (typeof authVals.agent === 'string') {
+        connection.agent = authVals.agent;
+        log.ok('Logging in with SSH agent "' + connection.agent + '"');
+      } else if (authVals.password === undefined) {
         keyLocation = getKeyLocation(authVals.keyLocation);
         connection.privateKey = fs.readFileSync(keyLocation);
         if (authVals.passphrase) connection.passphrase = authVals.passphrase;
@@ -299,7 +308,8 @@ module.exports = function(grunt) {
       grunt.verbose.writeln('Connection :: connect');
     });
     sshConn.on('error', function (e) {
-      grunt.fail.fatal('Connection :: error', e);
+      grunt.log.error(e);
+      grunt.fail.fatal('Connection :: error');
       done_handler();
     });
     sshConn.on('end', function (e) {
@@ -327,7 +337,8 @@ module.exports = function(grunt) {
           grunt.verbose.writeln('SFTP :: close',e);
         });
         sftp.on('error', function (e) {
-          grunt.fail.fatal('SFTP :: error', e);
+          grunt.log.error(e);
+          grunt.fail.fatal('SFTP :: error');
           done_handler();
         });
         sftp.on('open', function () {

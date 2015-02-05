@@ -89,6 +89,15 @@ The `.ftppass` file should be omitted from source control. The file or variable 
     "username": "username",
     "passphrase": "passphrase2",
     "keyLocation": "filename-of-key"
+  },
+  "sshAgentSocket": {
+    "username": "username",
+    "agent": true
+  },
+  "pageant": {
+    "username": "username",
+    "agent": "pageant"
+  }
 }
 ```
 
@@ -98,7 +107,9 @@ You can supply passwords for encrypted keys with the `passphrase` attribute.
 
 This way we can save as many username / password combinations as we want and look them up by the `authKey` value defined in the _grunt_ config file where the rest of the target parameters are defined.
 
-To use an environement variable instead of the `.ftppass` file, add the JSON string to your `~/.bashrc` (or equivalent), for example:
+If you use agent-based SSH authentication, you can set `agent` to `true` to use ssh-agent's UNIX socket. When on Windows, you can set it -- to `"pageant"` for authenticating with Pageant or to `true` to use a cygwin socket which is read from the SSH_AUTH_SOCK environment variable.
+
+To use an environment variable instead of the `.ftppass` file, add the JSON string to your `~/.bashrc` (or equivalent), for example:
 ```bash
 export GRUNT_SFTP="{
                     \"username\": \"your-username\",
