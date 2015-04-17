@@ -163,7 +163,7 @@ module.exports = function(grunt) {
         return JSON.parse(grunt.file.read('.ftppass'))[inKey] || null;
       }
 
-    }
+    } else return null;
   }
 
   function getKeyLocation(customKey) {
@@ -258,7 +258,7 @@ module.exports = function(grunt) {
     };
 
     // Use either password or key-based login
-    if (authVals === null) {
+    if (typeof authVals === 'undefined' || authVals === null) {
       grunt.warn('.ftppass seems to be missing or incomplete');
     } else {
       connection.username = authVals.username;
