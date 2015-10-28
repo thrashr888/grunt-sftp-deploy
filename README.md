@@ -32,6 +32,7 @@ To use this task you will need to include the following configuration in your _g
     dest: '/path/to/destination/folder',
     exclusions: ['/path/to/source/folder/**/.DS_Store', '/path/to/source/folder/**/Thumbs.db', 'dist/tmp'],
     serverSep: '/',
+    localSep: '/',
     concurrency: 4,
     progress: true
   }
@@ -54,6 +55,7 @@ The parameters in our configuration are:
 - **dest** - the destination location, the folder on the server we are deploying to
 - **exclusions** - an optional parameter allowing us to exclude files and folders by utilizing grunt's support for `minimatch`. Please note that the definitions should be relative to the project root
 - **serverSep** - an optional parameter allowing you to define the server separator in case it differs from your local environment. Useful if you deploy from Windows to Unix
+- **localSep** - an optional parameter allowing you to define your separator in case it differs from your local environment. Useful if you deploy from Windows git-bash to Unix - in this case set this to '\\\\'
 - **concurrency** - an optional parameter to define the number of concurrent file transfer, default to 4
 - **progress** - an optional parameter to display or not the progress bar
 
