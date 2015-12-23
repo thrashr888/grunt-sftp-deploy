@@ -27,6 +27,7 @@ module.exports = function(grunt) {
   var localRoot;
   var remoteRoot;
   var remoteSep;
+  var localSep = '/';
   var authVals;
   var exclusions;
   var progressLogger;
@@ -47,7 +48,7 @@ module.exports = function(grunt) {
     // initialize the `result` object if it is the first iteration
     if (result === undefined) {
       result = {};
-      result[path.sep] = [];
+      result[localSep] = [];
     }
 
     // check if `startDir` is a valid location
@@ -58,10 +59,10 @@ module.exports = function(grunt) {
     // iterate throught the contents of the `startDir` location of the current iteration
     files = fs.readdirSync(startDir);
     for (i = 0; i < files.length; i++) {
-      currFile = startDir + path.sep + files[i];
+      currFile = startDir + localSep + files[i];
       if (!file.isMatch({matchBase: true}, exclusions, currFile)) {
         if (file.isDir(currFile)) {
-          tmpPath = path.relative(localRoot, startDir + path.sep + files[i]);
+          tmpPath = path.relative(localRoot, startDir + localSep + files[i]);
           if (!_.has(result, tmpPath)) {
             result[tmpPath] = [];
           }
@@ -69,7 +70,7 @@ module.exports = function(grunt) {
         } else {
           tmpPath = path.relative(localRoot, startDir);
           if (!tmpPath.length) {
-            tmpPath = path.sep;
+            tmpPath = localSep;
           }
           result[tmpPath].push(files[i]);
         }
@@ -83,11 +84,11 @@ module.exports = function(grunt) {
   function sftpPut(inFilename, cb) {
     var fromFile, toFile, from, to;
 
-    fromFile = localRoot + path.sep + inFilename;
-    toFile = remoteRoot + remoteSep + inFilename.split(path.sep).join(remoteSep);
+    fromFile = localRoot + localSep + inFilename;
+    toFile = remoteRoot + remoteSep + inFilename.split(localSep).join(remoteSep);
 
-    if(path.sep != remoteSep) {
-      toFile = toFile.replace(new RegExp(path.sep == '\\' ? '\\\\' : '\\/', 'g'), remoteSep);
+    if(localSep != remoteSep) {
+      toFile = toFile.replace(new RegExp(localSep == '\\' ? '\\\\' : '\\/', 'g'), remoteSep);
     }
 
     grunt.verbose.write(fromFile + ' to ' + toFile);
@@ -130,8 +131,8 @@ module.exports = function(grunt) {
     }
     var remoteInPath;
 
-    if(inPath.indexOf(path.sep) !== -1){
-      remoteInPath = inPath.split(path.sep).join(remoteSep);
+    if(inPath.indexOf(localSep) !== -1){
+      remoteInPath = inPath.split(localSep).join(remoteSep);
     }else{
       remoteInPath = inPath;
     }
@@ -203,7 +204,7 @@ module.exports = function(grunt) {
     var ret = [];
     for(var n in toTransfer ){
       for( var k in toTransfer[n]){
-        ret.push( (n==path.sep?"":n+path.sep)+toTransfer[n][k]);
+        ret.push( (n==localSep?"":n+localSep)+toTransfer[n][k]);
       }
     }
     return ret;
@@ -238,6 +239,7 @@ module.exports = function(grunt) {
     localRoot = Array.isArray(this.data.src) ? this.data.src[0] : this.data.src;
     remoteRoot = Array.isArray(this.data.dest) ? this.data.dest[0] : this.data.dest;
     remoteSep = this.data.serverSep ? this.data.serverSep : "/";
+    localSep = this.data.localSep ? this.data.localSep : "/";
     var concurrency = parseInt(this.data.concurrency) || 4;
     with_progress = this.data.progress || !grunt.option("verbose");
 
