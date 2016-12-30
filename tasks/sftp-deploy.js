@@ -98,10 +98,10 @@ module.exports = function(grunt) {
     var upload = function(fromFile, toFile, cb) {
       sftpConn.fastPut( fromFile, toFile, function(err){
         if (err){
-          log.write((' Error uploading file: ' + err.message).red + '\n');
+          log.writeln((' Error uploading file: ' + err.message).red );
           cb(err);
         } else {
-          grunt.verbose.write(' done'.green + '\n' );
+          grunt.verbose.writeln(' done'.green );
           if( with_progress ) progressLogger.tick();
           transferred += parseInt(f_size/1024);
           cb(null);
