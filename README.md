@@ -1,6 +1,6 @@
 # grunt-sftp-deploy
 
-This is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _sftp_ protocol. It is mostly a copy of [grunt-ftp-deploy](https://github.com/zonak/grunt-ftp-deploy), but uses [ssh2](https://github.com/mscdex/ssh2) to provide sftp access instead of [jsftp](https://github.com/sergi/jsftp). And when I say "mostly a copy," I mean I stole it all and added sftp. Including this readme, for now.
+This is a [grunt](https://github.com/gruntjs/grunt) task for code deployment over the _sftp_ protocol. It is mostly a copy of [grunt-ftp-deploy](https://github.com/zonak/grunt-ftp-deploy), but uses [ssh2](https://github.com/mscdex/ssh2) to provide sftp access instead of [jsftp](https://github.com/sergi/jsftp). And when I say "mostly a copy," I mean I stole it all and added sftp. Including most of this readme.
 
 These days _git_ is not only our goto code management tool but in many cases our deployment tool as well. But there are many cases where _git_ is not really fit for deployment:
 
@@ -17,7 +17,7 @@ For simplicity purposes this task avoids deleting any files and it is not trying
 
 ## Usage
 
-To use this task you will need to include the following configuration in your _grunt_ file:
+To use this task you will need to include the following configuration in your `Gruntfile` file:
 
 ```javascript
 'sftp-deploy': {
@@ -128,5 +128,5 @@ If you are fetching credentials from different sources like internal grunt confi
 
 ## Dependencies
 
-This task is built by taking advantage of the great work of Brian White and his [ssh2](https://github.com/mscdex/ssh2) _node.js_ module.
+This task is built by taking advantage of the great work of Brian White and his [ssh2](https://github.com/mscdex/ssh2) NodeJS module.
 
