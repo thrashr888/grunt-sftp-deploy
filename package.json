@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "grunt": "^1.0.3",
-    "progress": "^2.0.0",
-    "ssh2": "^0.6.1"
+    "progress": "^2.0.3",
+    "ssh2": "^0.8.2"
   },
   "keywords": [
     "gruntplugin",
